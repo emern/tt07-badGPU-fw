@@ -40,6 +40,8 @@ import micropython
 from ttboard.boot.demoboard_detect import DemoboardDetect
 from ttboard.demoboard import DemoBoard
 import ttboard.util.colors as colors
+import examples.tt_um_badGPU as Project
+from ttboard.mode import RPMode
 
 # logging.dumpTicksMsDelta('import')
 
@@ -50,7 +52,7 @@ def startup():
     # construct DemoBoard
     # either pass an appropriate RPMode, e.g. RPMode.ASIC_RP_CONTROL
     # or have "mode = ASIC_RP_CONTROL" in ini DEFAULT section
-    ttdemoboard = DemoBoard()
+    ttdemoboard = DemoBoard(mode=RPMode.ASIC_RP_CONTROL)
     print("\n\n")
     print(f"The '{colors.color('tt', 'red')}' object is available.")
     print()
@@ -104,36 +106,5 @@ print(f"tt.sdk_version={tt.version}")
 # end by being so aggressive on collection
 gc.threshold(GCThreshold)
 
-# to run tests easily import a module of interest, as below, and then 
-# run() it
-
-
-def run_testbench_basic():
-    import microcotb
-    import examples.basic as test 
-    test.run()
-    return test 
-    
-def run_testbench_factorytest():
-    import microcotb
-    import examples.tt_um_factory_test as test 
-    test.run()
-    return test 
-
-def run_testbench_neptune():
-    import microcotb
-    import examples.tt_um_psychogenic_neptuneproportional as test 
-    test.run()
-    return test 
-
-# run_testbench_factorytest()
-# or
-# import examples.tt_um_psychogenic_shaman as test
-# import examples.tt_um_rejunity_sn76489 as test
-# import examples.tt_um_factory_test as test
-# import examples.tt_um_psychogenic_neptuneproportional as test 
-# dut = test.tt_um_psychogenic_neptuneproportional.DUT()
-# import examples.tt_um_rgbled_decoder as test
-# test.run()
-# from examples.basic import run
-
+print("Booting into badGPU!")
+Project.run()

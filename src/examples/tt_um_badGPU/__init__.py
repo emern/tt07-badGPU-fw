@@ -1,0 +1,1 @@
+from .tt_um_badGPU import main as run

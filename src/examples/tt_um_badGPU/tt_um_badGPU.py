@@ -13,6 +13,7 @@ import asyncio
 from ttboard.pins.gpio_map import GPIOMapTT06
 import machine
 from collections import deque
+import cmath
 
 class SPICommand():
     WRITE_POLY_A = 0x80
@@ -85,7 +86,6 @@ class GPU:
                         break
                 self.cs(1)
 
-
             await asyncio.sleep(0.0000001)
 
     def write(self, cmd):
@@ -105,8 +105,6 @@ class GPU:
 
         # Re-arrange triangles, should be x0 > x1 > x2
         ordered_vertices = sorted(vertices, reverse=False)
-
-        print(ordered_vertices)
 
         cmd_str = (
             (cmd) |
@@ -156,8 +154,6 @@ async def commander(gpu: GPU):
                 green_value=2,
                 blue_value=0,
                 vertices=[Vertex(0, 480), Vertex(640, 480), Vertex(320, 10*(i+1))])
-
-
             await asyncio.sleep(0.015)
 
         await asyncio.sleep(1)
@@ -175,7 +171,6 @@ async def commander(gpu: GPU):
                 green_value=2,
                 blue_value=0,
                 vertices=[Vertex(0, 480), Vertex(640, 480), Vertex(320, 10*(19-i))])
-
             await asyncio.sleep(0.015)
 
         await asyncio.sleep(1)
@@ -200,9 +195,49 @@ def main():
     time.sleep_ms(1)
     tt.reset_project(putInReset=False)
 
-    # Setup int pin
-    int_pin = machine.Pin(GPIOMapTT06.UIO4, machine.Pin.IN, tt.pins.uio4.pull)
-    int_pin.irq(trigger=machine.Pin.IRQ_RISING | machine.Pin.IRQ_FALLING, handler=pin_isr)
+    # # Setup int pin
+    # int_pin = machine.Pin(GPIOMapTT06.UIO4, machine.Pin.IN, tt.pins.uio4.pull)
+    # int_pin.irq(trigger=machine.Pin.IRQ_RISING | machine.Pin.IRQ_FALLING, handler=pin_isr)
 
-    # Start GPU
-    asyncio.run(runner(gpu))
+    # # Start GPU
+    # asyncio.run(runner(gpu))
+
+    # while True:
+    #     print(adc.read_u16() * 5.03477e-5)
+    #     time.sleep_us(50)
+
+
+    N_SAMPLE = 80
+    MINUS_TWO_J_PI = -2j * cmath.pi / N_SAMPLE
+
+    adc = machine.ADC(machine.Pin(GPIOMapTT06.RPIO29))
+
+    data = [0] * N_SAMPLE
+    processed_vals = [0] * N_SAMPLE
+
+    while True:
+        t_start = time.ticks_us()
+
+        # Collect data
+        for sample in range(N_SAMPLE):
+            data[sample] = adc.read_u16()
+            time.sleep_us(50)
+
+        t_start = time.ticks_us()
+
+        # Process data
+        for bin in range(N_SAMPLE):
+            val = 0
+            for sample in range(N_SAMPLE):
+                val += data[sample] * cmath.exp(bin * sample * MINUS_TWO_J_PI)
+            processed_vals[bin] = cmath.sqrt(val.real**2 + val.imag**2).real
+
+        t_end = time.ticks_us()
+
+        # Some delays to allow the print outputs to format nicely
+        print(f"Time taken: {(t_end - t_start) * 1e-6} seconds")
+        time.sleep(0.5)
+        print(f"Processed values: {processed_vals}")
+        time.sleep(0.5)
+        print()
+        print()

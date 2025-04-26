@@ -18,7 +18,7 @@
 #
 
 
-RPOS_UF2FILE=RPI_PICO-20241025-v1.24.0.uf2
+RPOS_UF2FILE=RPI_PICO.uf2
 TT_RUNS_SUPPORTED="unknown tt05 tt06 tt07 tt08"
 
 VERSION=$1
@@ -73,7 +73,7 @@ if [ "x$RPEXISTING" == "x" ]
 then
 	RPUF2=`mktemp -t rp2-pico-XXXX.uf2`
 	echo "Getting $RPOS_UF2FILE"
-	wget -O $RPUF2 -c "https://micropython.org/resources/firmware/$RPOS_UF2FILE"
+	wget -O $RPUF2 -c "https://github.com/v923z/micropython-builder/releases/download/latest/RPI_PICO.uf2"
 else
 	echo "already have $RPOS_UF2FILE (as $RPEXISTING)"
 	RPUF2=$RPEXISTING
